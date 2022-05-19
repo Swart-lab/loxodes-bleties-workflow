@@ -1,8 +1,23 @@
 rule all:
     input:
-        'bleties/LmagMAC.LmagMAC.milraa_ies.gff3', # MAC reads on MAC assembly
-        'bleties/LmagMIC.LmagMAC.milraa_ies.gff3'  # MIC reads on MAC assembly (typical use case for BleTIES)
+        # 'bleties/LmagMAC.LmagMAC.milraa_ies.gff3', # MAC reads on MAC assembly
+        # 'bleties/LmagMIC.LmagMAC.milraa_ies.gff3'  # MIC reads on MAC assembly (typical use case for BleTIES)
+        'bleties/LmagMAC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3', # MAC reads on MAC assembly
+        'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3'  # MIC reads on MAC assembly (typical use case for BleTIES)
 
+
+rule no_overlap_repeats:
+    input:
+        trf_gff=lambda wildcards: config['trf'][wildcards.asm],
+        fuzzy_gff='bleties/{ccs}.{asm}.milraa_ies_fuzzy.gff3'
+    output:
+        'bleties/{ccs}.{asm}.milraa_ies_fuzzy.no_overlap_repeats.gff3'
+    threads: 2
+    conda: 'envs/bedtools.yml'
+    shell:
+        r"""
+        bedtools intersect -a {input.fuzzy_gff} -b {input.trf_gff} -v > {output}
+        """
 
 
 rule run_bleties:

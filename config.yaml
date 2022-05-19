@@ -15,3 +15,9 @@ mapping: # Mappings of reads vs. assemblies
       /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/minimap2.LmagMIC_pb-ccs_vs_falcon-comb_LmagMAC.sort.bam
     LmagMAC: # CCS reads
       /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/minimap2.LmagMAC_pb-ccs_vs_falcon-comb_LmagMAC.sort.bam
+
+trf:
+  LmagMAC:
+    /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/trf/falcon-comb_LmagMAC.trf.no_overlap.min1000.merge.bed
+  LmagMAC:
+    /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/trf/falcon-comb_LmagMIC.trf.no_overlap.min1000.merge.bed
