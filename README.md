@@ -1,5 +1,5 @@
-Template workflow folder for Snakemake pipeline
+IES prediction on Loxodes MIC and MAC genomes
+=============================================
 
-After cloning this repository, you should change the name of the folder as
-appropriate, and update the remote URL of the repository to a new one for your
-project.
+BleTIES MILRAA using CCS reads cross-mapped onto Loxodes magnus Falcon
+reference assemblies.

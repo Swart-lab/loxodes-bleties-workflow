@@ -1,0 +1,3 @@
+[submodule "ParaFly"]
+	path = ParaFly
+	url = git@github.com:ParaFly/ParaFly.git

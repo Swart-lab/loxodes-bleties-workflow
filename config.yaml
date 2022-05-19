@@ -1,8 +1,17 @@
-# EXAMPLE: Paths to raw data
-rawdata:
-  sample_A: example/data_A
-  sample_B: example/data_B
+asm:
+  LmagMIC:
+    /ebio/abt2_projects/ag-swart-loxodes/assembly/falcon-comb_LmagMIC/scaffolds.fasta
+  LmagMAC:
+    /ebio/abt2_projects/ag-swart-loxodes/assembly/falcon-comb_LmagMAC/scaffolds.fasta
 
-samplenames:
-  - sample_A
-  - sample_B
+mapping: # Mappings of reads vs. assemblies
+  LmagMIC: # reference assembly
+    LmagMIC: # CCS reads
+      /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/mapping/minimap2.LmagMIC_pb-ccs_vs_falcon-comb_LmagMIC.sort.bam
+    LmagMAC: # CCS reads
+      /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/mapping/minimap2.LmagMAC_pb-ccs_vs_falcon-comb_LmagMIC.sort.bam
+  LmagMAC: # reference assembly
+    LmagMIC: # CCS reads
+      /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/minimap2.LmagMIC_pb-ccs_vs_falcon-comb_LmagMAC.sort.bam
+    LmagMAC: # CCS reads
+      /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/minimap2.LmagMAC_pb-ccs_vs_falcon-comb_LmagMAC.sort.bam

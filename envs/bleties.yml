@@ -2,6 +2,8 @@ channels:
   - conda-forge
   - bioconda
   - defaults
-channel_priority: strict
 dependencies:
-  - phyloflash=3.3b1
+  - bleties
+  - muscle=3.8.1551
+  - minimap2
+  - samtools
