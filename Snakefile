@@ -1,12 +1,68 @@
 rule all:
     input:
-        # 'bleties/LmagMAC.LmagMAC.milraa_ies.gff3', # MAC reads on MAC assembly
-        # 'bleties/LmagMIC.LmagMAC.milraa_ies.gff3'  # MIC reads on MAC assembly (typical use case for BleTIES)
         'bleties/LmagMAC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3', # MAC reads on MAC assembly
-        'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3'  # MIC reads on MAC assembly (typical use case for BleTIES)
+        'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3',  # MIC reads on MAC assembly (typical use case for BleTIES)
+        '/tmp/bleties/bowtie2.comb.LmagMAC.rg_tag.bam',
+        'variants/freebayes.LmagMAC.no_overlap_repeats.cmds'
+
+
+rule freebayes_commands:
+    input:
+        asm=lambda wildcards: config['asm'][wildcards.asm],
+        regions='variants/ref.{asm}.no_overlap_repeats.bed',
+        bam='/tmp/bleties/bowtie2.comb.{asm}.rg_tag.bam'
+    output:
+        'variants/freebayes.{asm}.no_overlap_repeats.cmds'
+    run:
+        with open(output[0], 'w') as fh_out:
+            with open(input.regions, 'r') as fh_in:
+                for line in fh_in:
+                    [chrom, start, stop] = line.rstrip().split("\t")
+                    cmd_out = f'freebayes -f {input.asm} -g 400 --haplotype-length 0 --min-alternate-count 1 --min-alternate-fraction 0 --pooled-continuous {input.bam} --region {chrom}:{start}-{stop} | vcffilter -f \"QUAL > 20\" > variants/split_vcf/{chrom}_{start}_{stop}.naive.q20.vcf'
+                    fh_out.write(cmd_out + "\n")
+
 
 
 rule no_overlap_repeats:
+    input:
+        trf_gff=lambda wildcards: config['trf'][wildcards.asm],
+        genome='variants/ref.{asm}.contig_lengths'
+    output:
+        'variants/ref.{asm}.no_overlap_repeats.bed'
+    conda: 'envs/bedtools.yml'
+    shell:
+        r"""
+        bedtools complement -i {input.trf_gff} -g {input.genome} > {output}
+        """
+
+
+rule contig_lengths:
+    input:
+        lambda wildcards: config['ctgbed'][wildcards.asm]
+    output:
+        'variants/ref.{asm}.contig_lengths'
+    shell:
+        r"""
+        cut -f1,3 {input} > {output}
+        """
+
+
+rule tag_illumina_mappings:
+    input:
+        mic_reads=lambda wildcards: config['mapping_illumina'][wildcards.asm]['LmagMIC'],
+        mac_reads=lambda wildcards: config['mapping_illumina'][wildcards.asm]['LmagMAC'],
+    output:
+        bam='/tmp/bleties/bowtie2.comb.{asm}.rg_tag.bam',
+        bai='/tmp/bleties/bowtie2.comb.{asm}.rg_tag.bam.bai'
+    conda: 'envs/variants.yml'
+    shell:
+        r"""
+        bamaddrg -b {input.mac_reads} -s mac -b {input.mic_reads} -s mic > {output};
+        samtools index {output.bam}
+        """
+
+
+rule bleties_no_overlap_repeats:
     input:
         trf_gff=lambda wildcards: config['trf'][wildcards.asm],
         fuzzy_gff='bleties/{ccs}.{asm}.milraa_ies_fuzzy.gff3'
@@ -45,7 +101,7 @@ rule run_bleties:
 rule bleties_mappings_commands:
     input:
         asm=lambda wildcards: config['asm'][wildcards.asm],
-        bam=lambda wildcards: config['mapping'][wildcards.asm][wildcards.ccs]
+        bam=lambda wildcards: config['mapping_pb'][wildcards.asm][wildcards.ccs]
     threads: 1
     output:
         'bleties.{ccs}.{asm}.cmds'

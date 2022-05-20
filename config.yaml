@@ -4,7 +4,13 @@ asm:
   LmagMAC:
     /ebio/abt2_projects/ag-swart-loxodes/assembly/falcon-comb_LmagMAC/scaffolds.fasta
 
-mapping: # Mappings of reads vs. assemblies
+ctgbed:
+  LmagMIC:
+    /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/falcon-comb_LmagMIC.ctg.bed
+  LmagMAC:
+    /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/falcon-comb_LmagMAC.ctg.bed
+
+mapping_pb: # Mappings of reads vs. assemblies
   LmagMIC: # reference assembly
     LmagMIC: # CCS reads
       /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/mapping/minimap2.LmagMIC_pb-ccs_vs_falcon-comb_LmagMIC.sort.bam
@@ -16,8 +22,15 @@ mapping: # Mappings of reads vs. assemblies
     LmagMAC: # CCS reads
       /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/minimap2.LmagMAC_pb-ccs_vs_falcon-comb_LmagMAC.sort.bam
 
+mapping_illumina:
+  LmagMAC: # reference assembly
+    LmagMIC: # Illumina reads
+      /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/bowtie2.LmagMIC_R12_ktrim_qtrim28_vs_falcon-comb_LmagMAC.sort.bam
+    LmagMAC: 
+      /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/mapping/bowtie2.LmagMAC_R12_ktrim_qtrim28_vs_falcon-comb_LmagMAC.sort.bam
+
 trf:
+  LmagMIC:
+    /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/trf/falcon-comb_LmagMIC.trf.no_overlap.min1000.merge.bed
   LmagMAC:
     /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMAC/trf/falcon-comb_LmagMAC.trf.no_overlap.min1000.merge.bed
-  LmagMAC:
-    /ebio/abt2_projects/ag-swart-loxodes/annotation/falcon-comb_LmagMIC/trf/falcon-comb_LmagMIC.trf.no_overlap.min1000.merge.bed
