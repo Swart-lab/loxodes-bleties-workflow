@@ -3,7 +3,24 @@ rule all:
         'bleties/LmagMAC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3', # MAC reads on MAC assembly
         'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3',  # MIC reads on MAC assembly (typical use case for BleTIES)
         '/tmp/bleties/bowtie2.comb.LmagMAC.rg_tag.bam',
-        'variants/freebayes.LmagMAC.no_overlap_repeats.cmds'
+        # 'variants/split_vcf.LmagMAC/'
+        expand('variants/freebayes.LmagMAC.g{cov_cutoff}.no_overlap_repeats.cmds', cov_cutoff=[200,400])
+
+
+# rule run_freebayes:
+#     input:
+#         'variants/freebayes.{asm}.no_overlap_repeats.cmds'
+#     output:
+#         directory('variants/split_vcf.{asm}/')
+#     conda: 'envs/variants.yml'
+#     threads: 16
+#     log: 'logs/run_freebayes.{asm}.log'
+#     shell: 
+#         # Retry failed commands max 1 time (default is 10); 0 doesn't work for some reason
+#         r"""
+#         mkdir -p {output}
+#         workflow/ParaFly/bin/ParaFly -c {input} -CPU {threads} -max_retry 1 -shuffle &> {log}
+#         """
 
 
 rule freebayes_commands:
@@ -12,15 +29,18 @@ rule freebayes_commands:
         regions='variants/ref.{asm}.no_overlap_repeats.bed',
         bam='/tmp/bleties/bowtie2.comb.{asm}.rg_tag.bam'
     output:
-        'variants/freebayes.{asm}.no_overlap_repeats.cmds'
+        'variants/freebayes.{asm}.g{cov_cutoff}.no_overlap_repeats.cmds'
     run:
         with open(output[0], 'w') as fh_out:
             with open(input.regions, 'r') as fh_in:
                 for line in fh_in:
                     [chrom, start, stop] = line.rstrip().split("\t")
-                    cmd_out = f'freebayes -f {input.asm} -g 400 --haplotype-length 0 --min-alternate-count 1 --min-alternate-fraction 0 --pooled-continuous {input.bam} --region {chrom}:{start}-{stop} | vcffilter -f \"QUAL > 20\" > variants/split_vcf/{chrom}_{start}_{stop}.naive.q20.vcf'
+                    # Use `timeout` command to terminate jobs that take longer than 2 hours
+                    # freebayes does not terminate after several hours in some genomic regions
+                    # and with naive mode, so we set a timeout to prevent those jobs
+                    # accumulating in the ParaFly queue.
+                    cmd_out = f'timeout -v 2h bash -c \"freebayes -f {input.asm} -g {wildcards.cov_cutoff} --haplotype-length 0 --min-alternate-count 1 --min-alternate-fraction 0 --pooled-continuous {input.bam} --region {chrom}:{start}-{stop} | vcffilter -f \'QUAL > 20\' > variants/split_vcf.{wildcards.asm}.g{wildcards.cov_cutoff}/{chrom}_{start}_{stop}.naive.q20.vcf\"'
                     fh_out.write(cmd_out + "\n")
-
 
 
 rule no_overlap_repeats:
