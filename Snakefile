@@ -4,18 +4,19 @@ rule all:
         'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3',  # MIC reads on MAC assembly (typical use case for BleTIES)
         '/tmp/bleties/bowtie2.comb.LmagMAC.rg_tag.bam',
         # 'variants/split_vcf.LmagMAC/'
-        expand('variants/freebayes.LmagMAC.g{cov_cutoff}.no_overlap_repeats.cmds', cov_cutoff=[200,400])
+        expand('variants/freebayes.LmagMAC.g{cov_cutoff}.no_overlap_repeats.cmds', cov_cutoff=[200,400]),
+        expand('variants/freebayes.diploid.LmagMAC.g{cov_cutoff}.no_overlap_repeats.cmds', cov_cutoff=[200,400])
 
 
 # rule run_freebayes:
 #     input:
-#         'variants/freebayes.{asm}.no_overlap_repeats.cmds'
+#         'variants/freebayes.{asm}.g{cov_cutoff}.no_overlap_repeats.cmds'
 #     output:
-#         directory('variants/split_vcf.{asm}/')
+#         directory('variants/split_vcf.{asm}.g{cov_cutoff}/')
 #     conda: 'envs/variants.yml'
 #     threads: 16
-#     log: 'logs/run_freebayes.{asm}.log'
-#     shell: 
+#     log: 'logs/run_freebayes.{asm}.g{cov_cutoff}.log'
+#     shell:
 #         # Retry failed commands max 1 time (default is 10); 0 doesn't work for some reason
 #         r"""
 #         mkdir -p {output}
@@ -23,7 +24,31 @@ rule all:
 #         """
 
 
-rule freebayes_commands:
+rule freebayes_commands_diploid:
+    """Call variants assuming diploid genome
+
+    Prepare list of commands to parallelize with ParaFly, better job management
+    than freebayes-parallel, which leaves some cores unused for long periods if
+    individual jobs take longer time than others to run.
+    """
+    input:
+        asm=lambda wildcards: config['asm'][wildcards.asm],
+        regions='variants/ref.{asm}.no_overlap_repeats.bed',
+        bam='/tmp/bleties/bowtie2.comb.{asm}.rg_tag.bam'
+    output:
+        'variants/freebayes.diploid.{asm}.g{cov_cutoff}.no_overlap_repeats.cmds'
+    run:
+        with open(output[0], 'w') as fh_out:
+            with open(input.regions, 'r') as fh_in:
+                for line in fh_in:
+                    [chrom, start, stop] = line.rstrip().split("\t")
+                    # Use `timeout` command to terminate jobs that take longer than 2 hours
+                    cmd_out = f'timeout -v 2h bash -c \"freebayes -f {input.asm} -g {wildcards.cov_cutoff} {input.bam} --region {chrom}:{start}-{stop} > variants/split_vcf.diploid.{wildcards.asm}.g{wildcards.cov_cutoff}/{chrom}_{start}_{stop}.diploid.q20.vcf\"'
+                    fh_out.write(cmd_out + "\n")
+
+
+rule freebayes_commands_naive:
+    """Call variants without assuming ploidy"""
     input:
         asm=lambda wildcards: config['asm'][wildcards.asm],
         regions='variants/ref.{asm}.no_overlap_repeats.bed',
@@ -57,6 +82,7 @@ rule no_overlap_repeats:
 
 
 rule contig_lengths:
+    """List of contig lengths"""
     input:
         lambda wildcards: config['ctgbed'][wildcards.asm]
     output:
@@ -68,6 +94,7 @@ rule contig_lengths:
 
 
 rule tag_illumina_mappings:
+    """Combine MAC and MIC mappings into single BAM file with RG tags"""
     input:
         mic_reads=lambda wildcards: config['mapping_illumina'][wildcards.asm]['LmagMIC'],
         mac_reads=lambda wildcards: config['mapping_illumina'][wildcards.asm]['LmagMAC'],
@@ -83,6 +110,7 @@ rule tag_illumina_mappings:
 
 
 rule bleties_no_overlap_repeats:
+    """Filter BleTIES output to remove low-complexity repeat regions"""
     input:
         trf_gff=lambda wildcards: config['trf'][wildcards.asm],
         fuzzy_gff='bleties/{ccs}.{asm}.milraa_ies_fuzzy.gff3'
@@ -97,6 +125,7 @@ rule bleties_no_overlap_repeats:
 
 
 rule run_bleties:
+    """Predict IESs with BleTIES MILRAA in CCS mode"""
     input:
         'bleties.{ccs}.{asm}.cmds'
     threads: 16
