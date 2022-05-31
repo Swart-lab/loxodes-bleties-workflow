@@ -25,7 +25,7 @@ rule haplotype_phase_whatshap:
     shell:
         r"""
         whatshap phase -o {output.vcf} --reference={input.asm} {input.vcf} {input.bam} > {output.out} 2> {log};
-        bcftools index --threads {output.vcf};
+        bcftools index {output.vcf};
         """
 
 
