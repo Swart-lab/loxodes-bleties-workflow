@@ -3,7 +3,27 @@ rule all:
         'bleties/LmagMAC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3', # MAC reads on MAC assembly
         'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3',  # MIC reads on MAC assembly (typical use case for BleTIES)
         expand('variants/freebayes.{mode}.LmagMAC.g{cov_cutoff}.no_overlap_repeats.sort.vcf.gz', mode=['naive','diploid'], cov_cutoff=[200,400]),
-        'variants/whatshap.freebayes.diploid.LmagMAC.g400.no_overlap_repeats.phased.vcf.gz'
+        expand('variants/whatshap.freebayes.{mode}.LmagMAC.g400.no_overlap_repeats.phased.vcf.gz', mode=['naive','diploid']),
+        expand('variants/whatshap.freebayes.{mode}.LmagMAC.g400.no_overlap_repeats.phased.blocks.out', mode=['naive','diploid'])
+
+
+# TODO: haplotagging
+
+
+rule haplotype_phase_blocks_whatshap:
+    input: 
+        vcf='variants/whatshap.freebayes.{mode}.{asm}.g{cov_cutoff}.no_overlap_repeats.phased.vcf.gz'
+    output:
+        gtf='variants/whatshap.freebayes.{mode}.{asm}.g{cov_cutoff}.no_overlap_repeats.phased.blocks.gtf',
+        block_list='variants/whatshap.freebayes.{mode}.{asm}.g{cov_cutoff}.no_overlap_repeats.phased.blocks.list',
+        tsv='variants/whatshap.freebayes.{mode}.{asm}.g{cov_cutoff}.no_overlap_repeats.phased.blocks.stats.tsv',
+        out='variants/whatshap.freebayes.{mode}.{asm}.g{cov_cutoff}.no_overlap_repeats.phased.blocks.out'
+    log: 'logs/haplotype_phase_blocks_whatshap.{mode}.{asm}.g{cov_cutoff}.log'
+    conda: 'envs/variants.yml'
+    shell:
+        r"""
+        whatshap stats --gtf {output.gtf} --block-list {output.block_list} --tsv {output.tsv} {input.vcf} > {output.out} 2> {log}
+        """
 
 
 rule haplotype_phase_whatshap:
