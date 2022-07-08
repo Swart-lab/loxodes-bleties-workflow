@@ -4,10 +4,25 @@ rule all:
         'bleties/LmagMIC.LmagMAC.milraa_ies_fuzzy.no_overlap_repeats.gff3',  # MIC reads on MAC assembly (typical use case for BleTIES)
         expand('variants/freebayes.{mode}.LmagMAC.g{cov_cutoff}.no_overlap_repeats.sort.vcf.gz', mode=['naive','diploid'], cov_cutoff=[200,400]),
         expand('variants/whatshap.freebayes.{mode}.LmagMAC.g400.no_overlap_repeats.phased.vcf.gz', mode=['naive','diploid']),
-        expand('variants/whatshap.freebayes.{mode}.LmagMAC.g400.no_overlap_repeats.phased.blocks.out', mode=['naive','diploid'])
+        expand('variants/whatshap.freebayes.{mode}.LmagMAC.g400.no_overlap_repeats.phased.blocks.out', mode=['naive','diploid']),
+        expand('/tmp/bleties/minimap2.comb.LmagMAC.rg_tag.{mode}.g400.haplotagged.bam',mode=['naive','diploid'])
 
 
-# TODO: haplotagging
+rule haplotag_reads_whatshap:
+    input:
+        vcf='variants/whatshap.freebayes.{mode}.{asm}.g{cov_cutoff}.no_overlap_repeats.phased.vcf.gz',
+        asm=lambda wildcards: config['asm'][wildcards.asm],
+        bam='/tmp/bleties/minimap2.comb.{asm}.rg_tag.bam'
+    output:
+        tagged_bam='/tmp/bleties/minimap2.comb.{asm}.rg_tag.{mode}.g{cov_cutoff}.haplotagged.bam',
+        tsv='/tmp/bleties/minimap2.comb.{asm}.rg_tag.{mode}.g{cov_cutoff}.haplotagged.tsv'
+    conda: 'envs/variants.yml'
+    log: 'logs/haplotag_reads_whatshap.{mode}.{asm}.g{cov_cutoff}.log'
+    shell:
+        r"""
+        whatshap haplotag -o {output.tagged_bam} --output-haplotag-list {output.tsv} --reference={input.asm} {input.vcf} {input.bam} &> {log};
+        samtools index {output.tagged_bam}
+        """
 
 
 rule haplotype_phase_blocks_whatshap:
