@@ -15,7 +15,9 @@ Input data are available from:
 "Loxodes magnus genome assemblies and annotations",
 https://doi.org/10.17617/3.9QTROS, Edmond.
 
-Output results are available from:
+Results of variant calling are available from:
+"Loxodes magnus indel polymorphisms and variant calling",
+https://doi.org/10.17617/3.NEV8C1, Edmond.
 
 
 Related datasets
