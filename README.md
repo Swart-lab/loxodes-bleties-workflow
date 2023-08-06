@@ -4,8 +4,8 @@ IES prediction on Loxodes MIC and MAC genomes
 BleTIES MILRAA using CCS reads cross-mapped onto Loxodes magnus Falcon
 reference assemblies.
 
-Set up: clone this repository into a subfolder `./workflow` of the working
-folder, and symlink the script `run_snakemake.sh` into the working folder root.
+Snakemake workflow files are in subfolder `./workflow`; Snakemake options are
+in the script `run_snakemake.sh`
 
 Input files for this workflow are genome assemblies and read mappings for L.
 magnus, listed in `workflow/config.yml`. Workflow to produce these files:

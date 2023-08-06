@@ -168,6 +168,7 @@ rule freebayes_commands_naive:
 
 
 rule no_overlap_repeats:
+    """Variant calls that do not overlap with low-complexity tandem repeats"""
     input:
         trf_gff=lambda wildcards: config['trf'][wildcards.asm],
         genome='variants/ref.{asm}.contig_lengths'
@@ -262,6 +263,10 @@ rule run_bleties:
 
 
 rule bleties_mappings_commands:
+    """Generate per-contig commands for BleTIES
+
+    Allow BleTIES run to be parallelized with ParaFly
+    """
     input:
         asm=lambda wildcards: config['asm'][wildcards.asm],
         bam=lambda wildcards: config['mapping_pb'][wildcards.asm][wildcards.ccs]
