@@ -2,3 +2,6 @@
 /logs
 /variants
 /bleties
+.ipynb_checkpoints
+bleties*.cmds*
+bleties.log
